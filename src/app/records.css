@@ -337,3 +337,62 @@
   border-radius: 10px;
   background: var(--gui-canvas);
 }
+/* Contribution card (P1): one reading surface inside the RecordSheet, no new card family. */
+.contribution-list {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid #d8d5d1;
+}
+.contribution-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px solid #d8d5d1;
+}
+.contribution-row dt {
+  font-size: 13px;
+  font-weight: var(--weight-ui-heavy);
+  line-height: 1.6;
+}
+.contribution-row dd {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.contribution-missing {
+  color: var(--gui-text-muted);
+  font-size: 14px;
+  font-style: italic;
+}
+.record-reading p.contribution-truth {
+  margin-top: 18px;
+  color: var(--gui-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.contribution-questions {
+  margin-top: 30px;
+  padding-top: 24px;
+  border-top: 1px solid #d8d5d1;
+}
+.contribution-questions h3 {
+  margin-bottom: 8px;
+}
+.contribution-questions ol {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding-left: 22px;
+  list-style: decimal;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.record-reading .contribution-card p.record-caption {
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}

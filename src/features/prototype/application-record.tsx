@@ -4,6 +4,7 @@ import { ProcessTimeline } from "@/components/process-timeline";
 import { RecordSheet } from "@/components/record-sheet";
 import { CvAttachment } from "./cv-attachment";
 import { MatchScore } from "./match-score";
+import { ContributionCard } from "./contribution-card";
 import { stageLabels, type Application, type Stage } from "./model";
 
 type RecordEvent = { stage: Stage; at: string; note?: string };
@@ -21,10 +22,19 @@ export function ApplicationRecord({
   statusRef,
   children,
   footer,
+  contributionExtra,
 }: {
   application: Pick<
     Application,
-    "candidateId" | "candidateName" | "jobTitle" | "stage" | "answer" | "cv" | "score" | "summary"
+    | "candidateId"
+    | "candidateName"
+    | "jobTitle"
+    | "stage"
+    | "answer"
+    | "cv"
+    | "score"
+    | "summary"
+    | "contribution"
   >;
   companyName: string;
   audience: "candidate" | "employer";
@@ -32,6 +42,8 @@ export function ApplicationRecord({
   statusRef?: Ref<HTMLSpanElement>;
   children?: ReactNode;
   footer?: ReactNode;
+  /** Role-specific content under the contribution card (employer interview questions). */
+  contributionExtra?: ReactNode;
 }) {
   const candidate = audience === "candidate";
   const title = candidate ? application.jobTitle : application.candidateName;
@@ -91,6 +103,15 @@ export function ApplicationRecord({
                     preview
                   />
                 </>
+              ),
+            },
+            {
+              value: "contribution",
+              label: "Karta wkładu",
+              content: (
+                <ContributionCard contribution={application.contribution} audience={audience}>
+                  {contributionExtra}
+                </ContributionCard>
               ),
             },
           ]}

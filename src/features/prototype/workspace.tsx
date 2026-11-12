@@ -10,7 +10,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { JobCard } from "@/features/jobs/job-card";
 import { ApplicationOfferPreview } from "@/features/jobs/application-offer-preview";
 import { usePrototype } from "./store";
-import { currentPerson, publishedJobs, stageLabels, MIN_APPLICATION_ANSWER_LENGTH } from "./model";
+import {
+  contributionFields,
+  currentPerson,
+  emptyContribution,
+  publishedJobs,
+  stageLabels,
+  MIN_APPLICATION_ANSWER_LENGTH,
+  type Contribution,
+} from "./model";
+import { contributionLabels, normalizeContribution } from "./contribution";
 import { PageTitle, Empty, NotFound, Notice } from "./shell";
 import { CvAttachment } from "./cv-attachment";
 import { MatchScore } from "./match-score";
@@ -239,6 +248,9 @@ export function ApplyPage() {
   const notes = draft?.notes ?? "";
   const generated = draft?.generated ?? "";
   const [answer, setAnswer] = useState(draft?.answer ?? "");
+  const [contribution, setContribution] = useState<Contribution>(
+    draft?.contribution ?? emptyContribution,
+  );
   const [consent, setConsent] = useState(false);
   const [message, setMessage] = useState("");
   const [attempted, setAttempted] = useState(false);
@@ -281,7 +293,17 @@ export function ApplyPage() {
       document.getElementById("application-consent")?.focus();
       return;
     }
-    if (run({ type: "submit", jobId: job!.id, notes, generated, answer, consent })) {
+    if (
+      run({
+        type: "submit",
+        jobId: job!.id,
+        notes,
+        generated,
+        answer,
+        contribution: normalizeContribution(contribution),
+        consent,
+      })
+    ) {
       submittedOnce.current = true;
       setSubmitted(true);
       if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -352,6 +374,34 @@ export function ApplyPage() {
                 : `Minimum ${MIN_APPLICATION_ANSWER_LENGTH} znaków. Obecnie: ${answerLength}.`}
             </p>
           </section>
+          <fieldset
+            className="application-form-section application-contribution"
+            aria-describedby="application-contribution-help"
+          >
+            <legend>
+              <h3>Karta wkładu</h3>
+            </legend>
+            <p id="application-contribution-help" className="application-help">
+              Opcjonalnie. Opisz jeden projekt i oddziel swoją pracę od pracy zespołu. Pracodawca
+              zobaczy kartę obok odpowiedzi, a puste pola jako „brak informacji”. Na jej podstawie
+              dostanie dwa pytania na rozmowę, więc wpisz to, o czym chcesz opowiedzieć.
+            </p>
+            {contributionFields.map((field) => (
+              <Field key={field} label={contributionLabels[field].form}>
+                <Textarea
+                  disabled={submitted}
+                  maxLength={2000}
+                  rows={field === "project" || field === "evidence" ? 2 : 3}
+                  value={contribution[field]}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setContribution((current) => ({ ...current, [field]: value }));
+                    setConsent(false);
+                  }}
+                />
+              </Field>
+            ))}
+          </fieldset>
           <div className="application-form-section application-submit">
             <label className="application-consent">
               <Checkbox
@@ -387,7 +437,16 @@ export function ApplyPage() {
                 disabled={submitted}
                 variant="outline"
                 onClick={() => {
-                  if (run({ type: "draft", jobId: job.id, notes, generated, answer }))
+                  if (
+                    run({
+                      type: "draft",
+                      jobId: job.id,
+                      notes,
+                      generated,
+                      answer,
+                      contribution: normalizeContribution(contribution),
+                    })
+                  )
                     setMessage("Szkic został zapisany.");
                 }}
               >

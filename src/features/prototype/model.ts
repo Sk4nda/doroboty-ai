@@ -104,6 +104,24 @@ export const nextStages: Record<Stage, Stage[]> = {
   withdrawn: [],
   hired: [],
 };
+export const contributionFields = ["project", "ownPart", "teamPart", "result", "evidence"] as const;
+export type ContributionField = (typeof contributionFields)[number];
+const contributionText = z.string().trim().max(2000);
+export const contributionSchema = z.object({
+  project: contributionText,
+  ownPart: contributionText,
+  teamPart: contributionText,
+  result: contributionText,
+  evidence: contributionText,
+});
+export type Contribution = z.infer<typeof contributionSchema>;
+export const emptyContribution: Contribution = {
+  project: "",
+  ownPart: "",
+  teamPart: "",
+  result: "",
+  evidence: "",
+};
 const applicationSchema = z.object({
   id,
   candidateId: id,
@@ -117,6 +135,7 @@ const applicationSchema = z.object({
   generatedAnswer: text,
   score: z.number().int().min(0).max(100),
   summary: text,
+  contribution: contributionSchema.optional(),
   stage: z.enum(stages),
   events: z
     .array(z.object({ stage: z.enum(stages), at: z.iso.datetime(), note: text }))
@@ -129,6 +148,7 @@ const draftSchema = z.object({
   notes: text,
   generated: text,
   answer: text,
+  contribution: contributionSchema.optional(),
 });
 export const stateSchema = z
   .object({
@@ -201,13 +221,21 @@ export type Action =
   | { type: "select_person"; id: string | null }
   | { type: "profile"; value: z.infer<typeof profileSchema> }
   | { type: "toggle_saved"; jobId: string }
-  | { type: "draft"; jobId: string; notes: string; generated: string; answer: string }
+  | {
+      type: "draft";
+      jobId: string;
+      notes: string;
+      generated: string;
+      answer: string;
+      contribution?: Contribution;
+    }
   | {
       type: "submit";
       jobId: string;
       notes: string;
       generated: string;
       answer: string;
+      contribution?: Contribution;
       consent: boolean;
     }
   | { type: "stage"; applicationId: string; stage: Stage; note: string }
@@ -312,6 +340,7 @@ export function transition(
         generatedAnswer: action.generated,
         score: p.exampleScore,
         summary: p.exampleSummary,
+        contribution: action.contribution,
         stage: "submitted",
         events: [{ stage: "submitted", at: now, note: "" }],
       }),

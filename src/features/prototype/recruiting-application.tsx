@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplicationRecord } from "./application-record";
+import { contributionQuestions } from "./contribution";
 import { nextStages, stageLabels, type Application } from "./model";
 import { usePrototype } from "./store";
 
@@ -13,6 +14,10 @@ export function RecruitingApplication({ application }: { application: Applicatio
   const pendingFocus = useRef(false);
   const company = state.companies.find((item) => item.id === application.companyId);
   const availableStages = nextStages[application.stage];
+  const questions = contributionQuestions(application.contribution);
+  const questionsText = `Pytania na rozmowę (z karty wkładu):\n1. ${questions[0]}\n2. ${questions[1]}`;
+  const questionsAdded = note.includes(questionsText);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
     if (pendingFocus.current) {
@@ -29,6 +34,38 @@ export function RecruitingApplication({ application }: { application: Applicatio
         audience="employer"
         history={application.events}
         statusRef={statusRef}
+        contributionExtra={
+          <section
+            className="contribution-questions"
+            aria-labelledby="contribution-questions-title"
+          >
+            <h3 id="contribution-questions-title">Dwa pytania na rozmowę</h3>
+            <p className="record-caption">
+              Złożone z szablonu na podstawie karty. To nie jest ocena ani odpowiedź modelu AI.
+            </p>
+            <ol>
+              <li>{questions[0]}</li>
+              <li>{questions[1]}</li>
+            </ol>
+            {availableStages.length > 0 && (
+              <div className="record-actions">
+                <Button
+                  variant="outline"
+                  disabled={questionsAdded}
+                  onClick={() => {
+                    setNote((current) =>
+                      current.trim() ? `${current.trimEnd()}\n\n${questionsText}` : questionsText,
+                    );
+                    setAnnouncement("Dodano pytania do notatki rekrutacyjnej.");
+                    noteRef.current?.focus();
+                  }}
+                >
+                  {questionsAdded ? "Pytania są w notatce" : "Dodaj pytania do notatki"}
+                </Button>
+              </div>
+            )}
+          </section>
+        }
         footer={
           availableStages.length > 0 ? (
             <>
@@ -67,6 +104,7 @@ export function RecruitingApplication({ application }: { application: Applicatio
               Widoczna tylko pracodawcy w tym scenariuszu.
             </p>
             <Textarea
+              ref={noteRef}
               id="recruiting-note"
               aria-label="Notatka rekrutacyjna (widoczna pracodawcy)"
               aria-describedby="recruiting-note-hint"
