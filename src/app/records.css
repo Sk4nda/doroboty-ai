@@ -22,6 +22,15 @@
   letter-spacing: normal;
   color: var(--gui-text-muted);
 }
+@media (max-width: 420px) {
+  /* Three tabs (Odpowiedź, CV, Karta wkładu) must fit a 320px viewport. */
+  .record-tabs {
+    gap: 4px;
+  }
+  .record-tabs .record-tab {
+    padding-inline: 8px;
+  }
+}
 .record-tab[data-active] {
   color: var(--gui-text);
 }

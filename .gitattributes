@@ -1,0 +1,8 @@
+# Keep LF in every checkout (including Windows with core.autocrlf=true) so
+# Prettier, design-system hashes and the participant packet verifier match.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.woff2 binary

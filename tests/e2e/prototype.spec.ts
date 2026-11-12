@@ -370,7 +370,8 @@ for (const width of [1440, 375]) {
     const form = page.locator("main form");
     const answer = page.getByLabel("Dlaczego pasujesz do tej roli?");
     await expect(answer).toHaveValue(draft.answer);
-    await expect(form.getByRole("textbox")).toHaveCount(1);
+    // One answer field plus the five optional contribution-card fields; no notes/AI fields.
+    await expect(form.getByRole("textbox")).toHaveCount(6);
     await expect(page.getByLabel("Twoje notatki do aplikacji (opcjonalnie)")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Przygotuj propozycję z AI" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Użyj propozycji" })).toHaveCount(0);
@@ -389,6 +390,12 @@ for (const width of [1440, 375]) {
       ),
     ).toBe(true);
     await answer.focus();
+    // The five optional contribution-card fields follow the answer, then consent.
+    const textboxes = form.getByRole("textbox");
+    for (let index = 1; index <= 5; index += 1) {
+      await page.keyboard.press("Tab");
+      await expect(textboxes.nth(index)).toBeFocused();
+    }
     await page.keyboard.press("Tab");
     await expect(page.getByRole("checkbox")).toBeFocused();
     await page.keyboard.press("Tab");
@@ -397,9 +404,9 @@ for (const width of [1440, 375]) {
     await expect(page.getByRole("button", { name: "Zapisz szkic", exact: true })).toBeFocused();
     const editedAnswer = "Moja poprawiona odpowiedź opisuje doświadczenie potrzebne w tej roli.";
     await answer.fill(editedAnswer);
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Tab");
+    // Five contribution fields, consent and submit precede "Zapisz szkic".
+    for (let step = 0; step < 8; step += 1) await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Zapisz szkic", exact: true })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("status")).toHaveText("Szkic został zapisany.");
     expect(
@@ -418,7 +425,8 @@ for (const width of [1440, 375]) {
       fullPage: true,
     });
     await answer.focus();
-    await page.keyboard.press("Tab");
+    for (let step = 0; step < 6; step += 1) await page.keyboard.press("Tab");
+    await expect(page.getByRole("checkbox")).toBeFocused();
     await page.keyboard.press("Space");
     await page.keyboard.press("Tab");
     await page.keyboard.press("Enter");
